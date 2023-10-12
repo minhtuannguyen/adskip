@@ -8,4 +8,4 @@ Safari variant of JS by oddlyspaced's near-instant YouTube ad skip. To be used v
 5. Make sure the Userscripts & the JS script itself is enabled, and that other ad blockers are disabled for YouTube.
 7. ta daaa
 
-This will work on iOS too. Just save it to your iCloud files or Airdrop it.
+This will work on iOS too. Just save it to your iCloud files or Airdrop it to your iPhone.
