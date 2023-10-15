@@ -2,9 +2,9 @@ Safari variant of JS by oddlyspaced's near-instant YouTube ad skip. To be used v
 
 ## Install instructions (for Safari only)
 1. Get Userscripts extension for Safari: https://apps.apple.com/us/app/userscripts/id1463298887
-2. Once installed, click on Userscript button in Safari toolbar, and click "Open Extension Page"
+2. Once installed, press on Userscript button in Safari toolbar, and press "Open Extension Page".
 3. Press "+" and then "New JS".
-4. Remove any existing text in the field. Copy & paste the YT adskip/adblock JS file contents, then press save.
+4. Remove any existing text in the field. Copy & paste the "safari_userscript.js" file contents, then press save.
 5. Make sure the Userscripts extension & the JS script itself is enabled, and that other ad blockers are disabled for YouTube.
 7. ta daaa
 
