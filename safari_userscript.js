@@ -1,81 +1,81 @@
 // ==UserScript==
-// @name         YouTube Ad Skip/Block
-// @encoding     utf-8
-// @description  Extension to watch for ads, and automatically seek and skip them.
-// @match        *://*.youtube.com/*
-// @exclude      *://music.youtube.com/*
-// @exclude      *://*.music.youtube.com/*
-// @compatible   safari
-// @connect      youtube.com
-// @grant        GM_addStyle
-// @run-at       document-end
+// @name         Youtube adblock
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  enough with the ads!
+// @author       4v3ngR
+// @match        https://*.youtube.com/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
+// @grant        none
+// @run-at       document-start
 // ==/UserScript==
 
-chrome.runtime.onInstalled.addListener(function () {
-  console.log("background");
-});
+//https://gist.github.com/4v3ngR/cf0141421570388f2814076443c1c385
 
-function getVideoContainer() {
-  const videoContainer = Array.from(
-    document.getElementsByClassName("html5-video-container"),
-  );
-  return videoContainer.length > 0 ? videoContainer[0] : null;
-}
+if (window.Oxdeadbeef === true) return;
+window.Oxdeadbeef = true;
 
-function getVideoWrapper() {
-  return getVideoContainer() ? getVideoContainer().parentNode : null;
-}
 
-function getVideoPlayer() {
-  return getVideoContainer() ? getVideoContainer().firstChild : null;
-}
+// Patches the ads for cold loading
+(function() {
+    var ytInitialPlayerResponse = null;
 
-function isAdShowing() {
-  const wrapper = getVideoWrapper();
-  return wrapper !== null
-    ? wrapper !== undefined && String(wrapper.className).includes("ad-showing")
-    : null;
-}
+    function getter() {
+        return ytInitialPlayerResponse;
+    }
 
-function getSkipButton() {
-  const skipAdButton = Array.from(
-    document.getElementsByClassName("ytp-ad-skip-button ytp-button"),
-  );
-  return skipAdButton.length > 0 ? skipAdButton[0] : null;
-}
+    function setter(data) {
+        ytInitialPlayerResponse = { ...data, adPlacements: [] };
+    }
 
-function waitForPlayer() {
-  if (getVideoPlayer()) {
-    hookVideoPlayer();
-  } else {
-    setTimeout(() => {
-      waitForPlayer();
-    }, 200);
-  }
-}
-
-function hookVideoPlayer() {
-  const videoPlayer = getVideoPlayer();
-  videoPlayer.addEventListener("timeupdate", () => {
-    getSkipButton()?.click();
-  });
-
-  if (isAdShowing()) {
-    videoPlayer.currentTime = videoPlayer.duration - 1;
-    videoPlayer.pause();
-    videoPlayer.play();
-  }
-}
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (
-    changeInfo.status === "complete" &&
-    String(tab.url).includes("https://www.youtube.com/watch")
-  ) {
-    console.log("on youtube");
-    chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      function: waitForPlayer,
+    Object.defineProperty(window, 'ytInitialPlayerResponse', {
+        get: getter,
+        set: setter,
+        configurable: true
     });
-  }
-});
+})();
+
+// FETCH POLYFILL
+(function() {
+    const {fetch: origFetch} = window;
+    window.fetch = async (...args) => {
+        const response = await origFetch(...args);
+
+        if (response.url.includes('/youtubei/v1/player')) {
+            const text = () =>
+                response
+                    .clone()
+                    .text()
+                    .then((data) => data.replace(/adPlacements/, 'odPlacement'));
+
+            response.text = text;
+            return response;
+        }
+        return response;
+    };
+})();
+
+// OTHER STUFF - just in case an ad gets through
+(function() {
+    window.autoClick = setInterval(function() {
+        try {
+            const btn = document.querySelector('.videoAdUiSkipButton,.ytp-ad-skip-button')
+            if (btn) {
+                btn.click()
+            }
+            const ad = document.querySelector('.ad-showing');
+            if (ad) {
+                document.querySelector('video').playbackRate = 10;
+            }
+        } catch (ex) {}
+    }, 100);
+
+    window.inlineAdsInterval = setInterval(function() {
+        try {
+            const div = document.querySelector('#player-ads');
+            if (div) {
+                div.parentNode.removeChild(div);
+            }
+        } catch (ex) {}
+    }, 500);
+})();
